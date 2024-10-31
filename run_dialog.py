@@ -56,7 +56,7 @@ class LLMRunner:
         use_history: bool = False,
         use_feedback: bool = False,
         temperature: float = 0.0,
-        llm_source: str = "gpt4",
+        llm_source: str = "llama3.2",
         ):
         self.env = env
         self.env.reset()

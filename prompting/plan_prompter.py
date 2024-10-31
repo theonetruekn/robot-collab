@@ -2,8 +2,8 @@ import os
 import json
 import pickle 
 import numpy as np
+import ollama
 from rocobench.envs import MujocoSimEnv, EnvState
-import openai
 from datetime import datetime
 from .feedback import FeedbackManager
 from .parser import LLMResponseParser
@@ -24,8 +24,7 @@ Each <coord> is a tuple (x,y,z) for gripper location, follow these steps to plan
         e.g. given path [(0.1, 0.2, 0.3), (0.2, 0.2. 0.3), (0.3, 0.4. 0.7)], the distance between steps (0.1, 0.2, 0.3)-(0.2, 0.2. 0.3) is too low, and between (0.2, 0.2. 0.3)-(0.3, 0.4. 0.7) is too high. You can change the path to [(0.1, 0.2, 0.3), (0.15, 0.3. 0.5), (0.3, 0.4. 0.7)] 
     If a plan failed to execute, re-plan to choose more feasible steps in each PATH, or choose different actions.
 """
-OPENAI_KEY = str(json.load(open("openai_key.json")))
-openai.api_key = OPENAI_KEY
+
 
 
 def get_chat_prompt(env: MujocoSimEnv):
@@ -233,21 +232,25 @@ Re-format to strictly follow [Action Output Instruction]!
                 action = input(f"Enter action for {aname}:\n")
                 response += f"NAME {aname} ACTION {action}\n"
             return response, dict()
+        
+        parameters = {
+            "num_predict": self.max_tokens,
+            "temperature": self.temperature,
+        }
 
         for n in range(self.max_api_queries):
             print('querying {}th time'.format(n))
             try:
-                response = openai.ChatCompletion.create(
+                response = ollama.chat(
                     model=self.llm_source,
                     messages=[
                         # {"role": "user", "content": user_prompt},
                         {"role": "system", "content": system_prompt},                                    
                     ],
-                    max_tokens=self.max_tokens,
-                    temperature=self.temperature, 
-                    )
+                    options=parameters
+                )
                 usage = response['usage']
-                response = response['choices'][0]['message']["content"]
+                response = response['message']["content"]
                 print('======= response ======= \n ', response)
                 print('======= usage ======= \n ', usage)
                 break

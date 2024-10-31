@@ -1,21 +1,15 @@
 import os 
 import json
 import pickle 
-import openai
 import numpy as np
+import ollama
 from datetime import datetime
 from os.path import join
 from typing import List, Tuple, Dict, Union, Optional, Any
 
-from rocobench.subtask_plan import LLMPathPlan
-from rocobench.rrt_multi_arm import MultiArmRRT
 from rocobench.envs import MujocoSimEnv, EnvState 
 from .feedback import FeedbackManager
 from .parser import LLMResponseParser
-
-assert os.path.exists("openai_key.json"), "Please put your OpenAI API key in a string in robot-collab/openai_key.json"
-OPENAI_KEY = str(json.load(open("openai_key.json")))
-openai.api_key = OPENAI_KEY
 
 PATH_PLAN_INSTRUCTION="""
 [Path Plan Instruction]
@@ -51,7 +45,7 @@ class DialogPrompter:
         use_history: bool = True,  
         use_feedback: bool = True,
         temperature: float = 0,
-        llm_source: str = "gpt-4"
+        llm_source: str = "llama3.2:3b"
     ):
         self.max_tokens = max_tokens
         self.debug_mode = debug_mode
@@ -70,7 +64,7 @@ class DialogPrompter:
         self.max_calls_per_round = max_calls_per_round 
         self.temperature = temperature
         self.llm_source = llm_source
-        assert llm_source in ["gpt-4", "gpt-3.5-turbo", "claude"], f"llm_source must be one of [gpt4, gpt-3.5-turbo, claude], got {llm_source}"
+        assert llm_source in ["llama3.1", "phi3:latest", "llama3.2:1b", "llama3.2:3b", "gemma2", "qwen2.5"], f"llm_source must be one of [llama3.1, phi3:latest, llama3.2:1b, llama3.2:3b, gemma2, qwen2.5], got {llm_source}"
 
     def compose_system_prompt(
         self, 
@@ -128,6 +122,7 @@ class DialogPrompter:
             parse_succ, parsed_str, llm_plans = self.parser.parse(obs, final_response) 
 
             curr_feedback = "None"
+            #FIXME: Terrible Feedback
             if not parse_succ:  
                 curr_feedback = f"""
 This previous response from [{final_agent}] failed to parse!: '{final_response}'
@@ -212,7 +207,7 @@ Your response is:
                         "sender": "UserPrompt",
                         "message": agent_prompt,
                     },
-                    {
+                    {#TODO
                         "sender": agent_name,
                         "message": response,
                     },
@@ -253,27 +248,32 @@ Your response is:
         # print('======= system prompt ======= \n ', system_prompt)
         # print('======= user prompt ======= \n ', user_prompt)
 
+        parameters = {
+            "num_predict": self.max_tokens,
+            "temperature": self.temperature,
+        }
+
         if self.debug_mode: 
             response = "EXECUTE\n"
             for aname in self.robot_agent_names:
                 action = input(f"Enter action for {aname}:\n")
                 response += f"NAME {aname} ACTION {action}\n"
             return response, dict()
-
+        
+        # Number of tries to run API
         for n in range(max_query):
             print('querying {}th time'.format(n))
             try:
-                response = openai.ChatCompletion.create(
+                response = ollama.chat(
                     model=self.llm_source, 
                     messages=[
-                        # {"role": "user", "content": ""},
                         {"role": "system", "content": system_prompt+user_prompt},                                    
                     ],
-                    max_tokens=self.max_tokens,
-                    temperature=self.temperature,
+                    options=parameters
                     )
-                usage = response['usage']
-                response = response['choices'][0]['message']["content"]
+                usage = 0
+                print(response)
+                response = response['message']["content"]
                 print('======= response ======= \n ', response)
                 print('======= usage ======= \n ', usage)
                 break

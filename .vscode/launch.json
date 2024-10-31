@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Roco",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--task", "sweep",
+                "-llm", "qwen2.5",
+                "-rn", "debug-sweep",
+                "-sd",
+                "-temp", "0.6"
+            ]
+        }
+    ]
+}
