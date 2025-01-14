@@ -235,8 +235,9 @@ def save_episode_html(
                 _data = [_data]
             else:
                 assert isinstance(_data, list), "json data must be a list or dict"
+            #breakpoint()
             filter_data = [
-                di for di in _data if di.get("sender", None) in sender_keys
+                di for di in _data if isinstance(di, dict) and di.get("sender") in sender_keys
             ]
             json_data.extend(filter_data)
 
@@ -303,6 +304,7 @@ def save_qa_data_html(
                 _data = [_data]
             else:
                 assert isinstance(_data, list), "json data must be a list or dict"
+            breakpoint()
             filter_data = [
                 di for di in _data if di.get("sender", None) in sender_keys
             ]

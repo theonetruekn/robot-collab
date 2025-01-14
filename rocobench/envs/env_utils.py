@@ -1,16 +1,18 @@
 from __future__ import annotations
-import os 
 import io
-import numpy as np 
 from itertools import product
-from pydantic import dataclasses, validator
-from transforms3d import affines, quaternions, euler
+import os
 from typing import Dict, List, Optional, Sequence, Tuple
-import matplotlib.pyplot as plt 
-import open3d as o3d
-from matplotlib.patches import Patch
-from PIL import Image 
+
+from PIL import Image
+import numpy as np
+from pydantic.v1 import dataclasses, validator
 import seaborn as sns
+
+from matplotlib.patches import Patch
+import matplotlib.pyplot as plt
+import open3d as o3d
+from transforms3d import affines, euler, quaternions
 Pixel = Tuple[int, int]
 Point3D = Tuple[float, float, float]
 

@@ -1,13 +1,17 @@
-import os 
-import json
-import pickle 
-import numpy as np
-import ollama
 from datetime import datetime
+import json
+import os
 from os.path import join
-from typing import List, Tuple, Dict, Union, Optional, Any
+import pickle
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from rocobench.envs import MujocoSimEnv, EnvState 
+import numpy as np
+from ollama import chat
+
+from ollama._types import Options
+
+from rocobench.envs import EnvState, MujocoSimEnv
+
 from .feedback import FeedbackManager
 from .parser import LLMResponseParser
 
@@ -64,7 +68,7 @@ class DialogPrompter:
         self.max_calls_per_round = max_calls_per_round 
         self.temperature = temperature
         self.llm_source = llm_source
-        assert llm_source in ["llama3.1", "phi3:latest", "llama3.2:1b", "llama3.2:3b", "gemma2", "qwen2.5"], f"llm_source must be one of [llama3.1, phi3:latest, llama3.2:1b, llama3.2:3b, gemma2, qwen2.5], got {llm_source}"
+        assert llm_source in ["llama3.1", "phi3:latest", "llama3.2:1b", "llama3.2:3b", "gemma2", "qwen2.5", "qwen2.5-coder:7b-instruct-q4_K_M"], f"Check LLM Source, got {llm_source}"
 
     def compose_system_prompt(
         self, 
@@ -231,9 +235,9 @@ Your response is:
                         dialog_done = True
                         break
  
-                if self.debug_mode:
-                    dialog_done = True
-                    break
+                #if self.debug_mode:
+                #    dialog_done = True
+                #    break
             
             if dialog_done:
                 break
@@ -253,23 +257,26 @@ Your response is:
             "temperature": self.temperature,
         }
 
-        if self.debug_mode: 
+        if self.debug_mode:
+            print(system_prompt+user_prompt)
             response = "EXECUTE\n"
-            for aname in self.robot_agent_names:
-                action = input(f"Enter action for {aname}:\n")
-                response += f"NAME {aname} ACTION {action}\n"
-            return response, dict()
+            response = input()
+            import re
+            formatted_response = re.sub(r"\\n", "\n", response)
+            return formatted_response, dict()
         
         # Number of tries to run API
         for n in range(max_query):
             print('querying {}th time'.format(n))
             try:
-                response = ollama.chat(
+                response = chat(
                     model=self.llm_source, 
                     messages=[
-                        {"role": "system", "content": system_prompt+user_prompt},                                    
+                        {"role": "system", "content": system_prompt}, 
+                        {"role": "user", "content": user_prompt}                                    
                     ],
-                    options=parameters
+                    options=parameters,
+                    stream=False
                     )
                 usage = 0
                 print(response)

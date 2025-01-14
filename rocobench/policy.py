@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Callable, List, Optional, Tuple, Union, Dict, Set
 from dm_control.utils.inverse_kinematics import qpos_from_site_pose
-from pydantic import dataclasses, validator
 import matplotlib.pyplot as plt
 
 from rocobench.envs import SimAction, EnvState, SimRobot

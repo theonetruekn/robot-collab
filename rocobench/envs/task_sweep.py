@@ -1,10 +1,4 @@
-import os
-import copy
-import time
-import cv2 
-import random
 import numpy as np  
-from pydantic import dataclasses, validator 
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import dm_control 
 from dm_control.utils.transformations import mat_to_quat
@@ -486,7 +480,7 @@ if __name__ == "__main__":
     breakpoint()
     qpos_str ='2.29713e-08 -1.5708 -1.56377 1.57773 -1.56978 -1.5711 1.5708 0.284905 -0.0174837 0.264695 -0.264704 0.284905 -0.0173209 0.264824 -0.264998 -7.51154e-10 -1.57 0.000855777 1.57078 -1.57897 -1.56874 1.57001 -0.785298 0.0101015 0.0101007 1.15393 0.916272 0.674846 0.707121 0.00393568 0.00175927 0.70708 0.291037 0.108907 0.469551 -0.707118 -0.00508377 -0.00550396 -0.707056 0.151986 -0.151986 -0.532194 0.556831 -0.656483 0.529295 0.174891 -0.238563 0.665648 0.238563 0.665648 0.5 0.4 0.184784 1 4.40206e-17 7.02693e-19 4.76025e-17 0.869316 0.602884 0.184909 0.969597 -0.000376084 0.000355242 -0.244706'
     qpos = np.array([float(x) for x in qpos_str.split(' ')])
-    env.physics.data.qpos[:] = qpos 
+    env.physics.data.qpos[:] = qpos
     env.physics.forward()
     obs = env.get_obs()
     print(env.describe_obs(obs))

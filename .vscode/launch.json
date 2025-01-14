@@ -10,10 +10,29 @@
             "args": [
                 "--task", "sweep",
                 "-llm", "qwen2.5",
-                "-rn", "debug-sweep",
+                "-rn", "debug-sweep-waypoints",
                 "-sd",
-                "-temp", "0.6"
-            ]
+                "-temp", "0.6",
+                "--output_mode", "action_and_path"
+            ],
+            "justMyCode": false
+        },
+        {
+            "name": "Run Roco",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--task", "sweep",
+                "-llm", "qwen2.5",
+                "-rn", "data_collection",
+                "-sd",
+                "-temp", "0.6",
+                "--output_mode", "action_only",
+                "-i"
+            ],
+            "noDebug": true
         }
     ]
 }
